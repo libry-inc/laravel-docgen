@@ -1,0 +1,6 @@
+# composer
+/vendor
+
+# php-cs-fixer
+/.php-cs-fixer.cache
+/tools/php-cs-fixer/vendor
