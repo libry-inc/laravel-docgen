@@ -1,0 +1,28 @@
+version: '3.5'
+
+networks:
+  laravel-docgen:
+    name: laravel-docgen
+    driver: bridge
+
+services:
+    mysql:
+      image: mysql:8
+      container_name: laravel-docgen-mysql
+      environment:
+        - MYSQL_DATABASE=default
+        - MYSQL_USER=default
+        - MYSQL_PASSWORD=secret
+        - MYSQL_ROOT_PASSWORD=root
+      volumes:
+        - ./storage/mysql/:/var/lib/mysql:delegated
+      networks:
+        - laravel-docgen
+    php:
+      image: laravel-docgen/php
+      volumes:
+        - ./:/var/www:cached
+      tty: true
+      working_dir: /var/www
+      networks:
+        - laravel-docgen
