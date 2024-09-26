@@ -27,11 +27,11 @@ artisan laravel-docgen db.sample
 ## Install
 ```sh
 docker buildx bake
-docker-compose up -d
-docker-compose exec php composer install
+docker compose up -d
+docker compose exec php composer install
 ```
 
 ## Pre-commit
 ```sh
-docker-compose exec php composer fixer
+docker compose exec php composer fixer
 ```
