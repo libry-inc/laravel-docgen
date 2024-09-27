@@ -18,7 +18,7 @@ $output->setFilename('sample.md');
     'tableNoteMap' => ['groups' => 'groups can have up to 10 members.'],
     'relationMap' => [
         'tests' => [
-            'custom_fk1' => new \Libry\LaravelDocgen\Collector\Db\Relation('custom_fk1', foreignTableName: 'members'),
+            'custom_fk1' => new \Libry\LaravelDocgen\Collector\Db\Relation('custom_fk1', 'members'),
         ],
         'members' => [
             'members_group_id_foreign' => '}o-||',

@@ -3,7 +3,7 @@
  * @var \Libry\LaravelDocgen\Collector\Db\TableCollection<string,\Libry\LaravelDocgen\Collector\Db\Table> $tableCollection
  * @var ?string $config
  * @var string[]|null $tableNoteMap - $tableNoteMap[$tableName]: an additional note for the table
- * @var string[]|null $relationMap - $relationMap[$tableName][$foreignKeyName]: an additional or overriding relation
+ * @var (\Libry\LaravelDocgen\Collector\Db\Relation|array|string)[]|null $relationMap - $relationMap[$tableName][$foreignKeyName]: an additional or overriding relation
  * @var ?string $footer
  */
 @endphp
@@ -16,10 +16,10 @@
 @endisset
 
 @foreach($tableCollection as $tableName => $table)
-{{----}}entity "{!! (($name = $table->getLogicalName()) ? "$name\\n" : '').$tableName !!}" as _{!! $tableName !!} {
-{{----}}@if(!is_null($key = $table->dbal->getPrimaryKey()) && (count($columns = $key->getColumns()) !== 1 || $columns[0] !== 'id'))
-{{----}}{{----}}@foreach($columns as $column)
-{{----}}{{----}}{{----}}    * {!! $column !!}
+{{----}}entity "{!! (($name = $table->logicalName) ? "$name\\n" : '').$tableName !!}" as _{!! $tableName !!} {
+{{----}}@if(!is_null($primary = $table->primary) && (count($keys = $primary->columns) !== 1 || $keys[0] !== 'id'))
+{{----}}{{----}}@foreach($keys as $key)
+{{----}}{{----}}{{----}}    * {!! $key !!}
 {{----}}{{----}}@endforeach
 {{----}}@endif
 {{----}}    --
@@ -31,10 +31,10 @@
 
 @foreach($tableCollection as $tableName => $table)
 {{----}}@foreach($table->iterateRelations($relationMap[$tableName] ?? []) as $relation)
-{{----}}{{----}}@if(isset($relation->line) && isset($tableCollection[$relation->foreignTableName]))
+{{----}}{{----}}@if($relation->line !== '' && isset($tableCollection[$relation->foreignTable]))
 {{----}}{{----}}{{----}}{!!
-/*--------------------*/"_$tableName {$relation->line} _{$relation->foreignTableName}"
-/*--------------------*/!!}@if($relation->comment !== '') : {!! $relation->comment ?? $relation->foreignKeyName !!}@endif
+/*--------------------*/"_$tableName {$relation->line} _{$relation->foreignTable}"
+/*--------------------*/!!}@if($relation->comment !== '') : {!! $relation->comment ?? $relation->name !!}@endif
 {{----}}{{----}}{{----}}
 {{----}}{{----}}@endif
 {{----}}@endforeach
