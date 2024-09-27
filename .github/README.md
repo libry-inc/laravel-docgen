@@ -16,7 +16,7 @@ artisan vendor:publish --tag=laravel-docgen
 ## Publish and generate a sample document
 ```sh
 artisan vendor:publish --tag=laravel-docgen.sample
-artisan laravel-docgen db.sample
+artisan docgen db.sample
 ```
 
 ## Customize

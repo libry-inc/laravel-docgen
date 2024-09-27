@@ -8,7 +8,7 @@ use Libry\LaravelDocgen\Documenter;
 class Run extends Command implements IOInterface
 {
     protected $signature = <<<'EOS'
-        laravel-docgen
+        docgen
         {--c|collector= : a key of config('laravel-docgen.collectors')}
         {--d|deployer= : a key of config('laravel-docgen.deployers')}
         {--w|watch : document each time the file in path changes}
