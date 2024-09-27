@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
@@ -30,6 +31,12 @@ return new class extends Migration {
                 $table->increments('id')->comment('Member ID');
                 $table->unsignedInteger('group_id');
                 $table->unsignedInteger('user_id');
+                $table->unsignedInteger('role_id');
+            },
+            'roles' => static function (Blueprint $table): void {
+                $table->comment("Role table\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec nulla vel neque luctus ullamcorper. Ut et mi vel lectus gravida finibus eu a nisl. Aenean maximus felis sed augue tempor ornare. Aenean elementum nibh vel diam rhoncus, a sodales nulla bibendum. In hac habitasse platea dictumst. Proin lacinia tellus ut sem sodales pellentesque. Etiam nisl leo, porttitor nec viverra nec, finibus eu nibh. Donec pharetra lorem felis, eu fringilla purus elementum vel. Integer consequat a risus non ultricies. Sed erat nibh, feugiat id accumsan eu, dictum eu diam. Quisque bibendum pretium mauris sed ullamcorper. Morbi a tincidunt diam. Nullam.");
+                $table->increments('id')->comment('Role ID');
+                $table->string('value');
             },
             'tests' => static function (Blueprint $table): void {
                 $table->comment("Tests table\nFor checking available types conversion.");
@@ -93,6 +100,12 @@ return new class extends Migration {
                 }
             });
         }
+
+        DB::table('roles')->insert([
+            ['id' => 1, 'value' => 'Administrator'],
+            ['id' => 2, 'value' => 'Developer'],
+            ['id' => 3, 'value' => 'Reader'],
+        ]);
     }
 
     public function down(): void

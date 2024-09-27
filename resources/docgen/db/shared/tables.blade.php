@@ -3,6 +3,8 @@
  * @var \Libry\LaravelDocgen\Collector\Db\TableCollection<string,\Libry\LaravelDocgen\Collector\Db\Table> $tableCollection
  * @var string[]|null $tableNoteMap - $tableNoteMap[$tableName]: an additional note for the table
  */
+$ignoreColumns = ['created_at', 'updated_at'];
+$flippedIgnoreColumns = array_flip($ignoreColumns);
 @endphp
 @foreach($tableCollection as $tableName => $table)
 {{----}}### {!! $tableName !!}
@@ -24,6 +26,16 @@
 /*------------*/!!} |
 {{----}}@endforeach
 {{----}}
-{{----}}{!! $table2note[$tableName] ?? '' !!}
-{{----}}
+{{----}}@if($listsRecords ?? false)
+{{----}}{{----}}| {!! implode(' | ', array_keys(array_diff_key($table->columnMap, $flippedIgnoreColumns))) !!} |
+{{----}}{{----}}| {!! implode(' | ', array_fill(0, count(array_diff_key($table->columnMap, $flippedIgnoreColumns)), '--')) !!} |
+{{----}}{{----}}@foreach($table->query()->get() as $record)
+{{----}}{{----}}{{----}}| {!! implode(' | ', array_values(array_diff_key((array) $record, $flippedIgnoreColumns))) !!} |
+{{----}}{{----}}@endforeach
+{{----}}{{----}}
+{{----}}@endif
+{{----}}@isset($tableNoteMap[$tableName])
+{{----}}{{----}}{!! $tableNoteMap[$tableName] !!}
+{{----}}{{----}}
+{{----}}@endisset
 @endforeach
