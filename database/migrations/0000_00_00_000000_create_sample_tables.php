@@ -4,11 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSampleTables extends Migration
-{
-    private $tables;
+return new class extends Migration {
+    private array $tables;
 
-    private $foreignKeys = [
+    private array $foreignKeys = [
         'members' => [
             ['group_id', 'groups', 'id', 'cascadeOnDelete', 'cascadeOnUpdate'],
             ['user_id', 'users', 'id', 'cascadeOnDelete', 'cascadeOnUpdate'],
@@ -83,8 +82,7 @@ class CreateSampleTables extends Migration
                 foreach ($foreignKeys as $name => $foreignKey) {
                     $foreignKeyDefinition = is_numeric($name)
                         ? $table->foreign(array_shift($foreignKey))
-                        : $table->foreign(array_shift($foreignKey), $name)
-                    ;
+                        : $table->foreign(array_shift($foreignKey), $name);
                     $foreignKeyDefinition->on(array_shift($foreignKey))->references(array_shift($foreignKey));
 
                     foreach ($foreignKey as $method) {
@@ -115,4 +113,4 @@ class CreateSampleTables extends Migration
             Schema::dropIfExists($table);
         }
     }
-}
+};

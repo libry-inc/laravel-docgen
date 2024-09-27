@@ -15,8 +15,7 @@ class Documenter
         protected CollectorFactory $collectorFactory,
         protected DeployerFactory $deployerFactory,
         protected ViewFactory $viewFactory,
-    ) {
-    }
+    ) {}
 
     public function watch(string $path, ?string $collectorDriver, ?string $deployerDriver, bool $refreshes, IOInterface $io): void
     {

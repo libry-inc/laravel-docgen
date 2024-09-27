@@ -35,7 +35,7 @@ class Run extends Command implements IOInterface
         }
 
         if ($refreshes || $this->option('watch')) {
-            $this->line('[CTRL \\] stop safely.');
+            $this->line('[CTRL \] stop safely.');
             $this->trap(SIGQUIT, fn () => $this->running = false);
             $documenter->watch($this->argument('path'), $this->option('collector'), $this->option('deployer'), $refreshes, $this);
             $this->line('');

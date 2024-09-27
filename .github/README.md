@@ -8,7 +8,7 @@ You can edit the output with Blade PHP, like below:
 
 # Installation
 ```sh
-composer require libry-inc/laravel-docgen
+composer require --dev libry-inc/laravel-docgen
 artisan vendor:publish --tag=laravel-docgen
 ```
 
