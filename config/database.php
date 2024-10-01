@@ -12,5 +12,4 @@ return [
             'password' => 'secret',
         ],
     ],
-    'migrations' => 'migrations',
 ];

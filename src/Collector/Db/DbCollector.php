@@ -98,7 +98,14 @@ class DbCollector implements CollectorInterface
 
     protected function getDefaultIgnoreTableNames(): array
     {
-        return [config('database.migrations')];
+        /**
+         * array if laravel>=11 https://github.com/laravel/laravel/blob/11.x/config/database.php
+         * string if laravel<11 https://github.com/laravel/laravel/blob/10.x/config/database.php
+         * @var array|string $config
+         */
+        $config = config('database.migrations');
+
+        return $config['table'] ?? $config;
     }
 
     protected function getSchemaBuilder(): Builder
