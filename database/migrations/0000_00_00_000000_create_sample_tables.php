@@ -2,13 +2,13 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSampleTables extends Migration
-{
-    private $tables;
+return new class extends Migration {
+    private array $tables;
 
-    private $foreignKeys = [
+    private array $foreignKeys = [
         'members' => [
             ['group_id', 'groups', 'id', 'cascadeOnDelete', 'cascadeOnUpdate'],
             ['user_id', 'users', 'id', 'cascadeOnDelete', 'cascadeOnUpdate'],
@@ -31,6 +31,12 @@ class CreateSampleTables extends Migration
                 $table->increments('id')->comment('Member ID');
                 $table->unsignedInteger('group_id');
                 $table->unsignedInteger('user_id');
+                $table->unsignedInteger('role_id');
+            },
+            'roles' => static function (Blueprint $table): void {
+                $table->comment("Role table\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec nulla vel neque luctus ullamcorper. Ut et mi vel lectus gravida finibus eu a nisl. Aenean maximus felis sed augue tempor ornare. Aenean elementum nibh vel diam rhoncus, a sodales nulla bibendum. In hac habitasse platea dictumst. Proin lacinia tellus ut sem sodales pellentesque. Etiam nisl leo, porttitor nec viverra nec, finibus eu nibh. Donec pharetra lorem felis, eu fringilla purus elementum vel. Integer consequat a risus non ultricies. Sed erat nibh, feugiat id accumsan eu, dictum eu diam. Quisque bibendum pretium mauris sed ullamcorper. Morbi a tincidunt diam. Nullam.");
+                $table->increments('id')->comment('Role ID');
+                $table->string('value');
             },
             'tests' => static function (Blueprint $table): void {
                 $table->comment("Tests table\nFor checking available types conversion.");
@@ -43,25 +49,27 @@ class CreateSampleTables extends Migration
                 $table->unsignedSmallInteger('uint16');
                 $table->unsignedTinyInteger('uint8');
                 $table->decimal('dec');
-                $table->unsignedDecimal('udec6_3', 6, 3);
-                $table->float('float');
-                $table->unsignedFloat('ufloat');
+                $table->decimal('dec_with', 6, 3);
+                $table->float('float')->comment("\nalias double");
                 $table->double('double');
-                $table->unsignedDouble('udouble');
                 $table->boolean('bool');
                 $table->binary('bin')->nullable();
-                $table->date('date')->useCurrent();
+                $table->binary('limited_bin', 128);
+                $table->binary('fixed_bin', 32, true);
+                $table->date('date');
                 $table->dateTime('datetime')->useCurrent();
-                $table->dateTime('datetime_ms', 3)->useCurrent();
+                $table->dateTime('datetime_ms', 3)->useCurrentOnUpdate();
                 $table->time('time')->default('12:00:00');
                 $table->time('time_ms', 3);
                 $table->string('str')->default("abc\ndef");
+                $table->string('limited_str', 128);
+                $table->char('default_char');
                 $table->char('char16', 16);
                 $table->longText('text64');
                 $table->mediumText('text32');
                 $table->text('text16');
                 $table->tinyText('text8');
-                $table->enum('enum', ['A', 'B', 'C'])->comment("\ntreat as a string");
+                $table->enum('enum', ['A', 'B', 'C']);
                 $table->index(['int16', 'int8']);
                 $table->index('int8');
                 $table->unique(['uint16', 'uint8']);
@@ -83,8 +91,7 @@ class CreateSampleTables extends Migration
                 foreach ($foreignKeys as $name => $foreignKey) {
                     $foreignKeyDefinition = is_numeric($name)
                         ? $table->foreign(array_shift($foreignKey))
-                        : $table->foreign(array_shift($foreignKey), $name)
-                    ;
+                        : $table->foreign(array_shift($foreignKey), $name);
                     $foreignKeyDefinition->on(array_shift($foreignKey))->references(array_shift($foreignKey));
 
                     foreach ($foreignKey as $method) {
@@ -93,6 +100,12 @@ class CreateSampleTables extends Migration
                 }
             });
         }
+
+        DB::table('roles')->insert([
+            ['id' => 1, 'value' => 'Administrator'],
+            ['id' => 2, 'value' => 'Developer'],
+            ['id' => 3, 'value' => 'Reader'],
+        ]);
     }
 
     public function down(): void
@@ -115,4 +128,4 @@ class CreateSampleTables extends Migration
             Schema::dropIfExists($table);
         }
     }
-}
+};

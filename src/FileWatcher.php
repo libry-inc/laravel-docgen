@@ -12,9 +12,7 @@ class FileWatcher
 
     protected array $changedTimestampMap;
 
-    public function __construct(protected array $paths)
-    {
-    }
+    public function __construct(protected array $paths) {}
 
     public function refresh(): void
     {

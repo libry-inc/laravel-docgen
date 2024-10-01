@@ -2,216 +2,84 @@
 
 namespace Libry\LaravelDocgen\Collector\Db;
 
-use Doctrine\DBAL\Schema\Column as Dbal;
-use Doctrine\DBAL\Schema\ForeignKeyConstraint;
-use Doctrine\DBAL\Schema\Index;
-use Doctrine\DBAL\Types\BigIntType;
-use Doctrine\DBAL\Types\BinaryType;
-use Doctrine\DBAL\Types\BlobType;
-use Doctrine\DBAL\Types\BooleanType;
-use Doctrine\DBAL\Types\DateTimeType;
-use Doctrine\DBAL\Types\DateType;
-use Doctrine\DBAL\Types\DecimalType;
-use Doctrine\DBAL\Types\FloatType;
-use Doctrine\DBAL\Types\IntegerType;
-use Doctrine\DBAL\Types\SimpleArrayType;
-use Doctrine\DBAL\Types\SmallIntType;
-use Doctrine\DBAL\Types\StringType;
-use Doctrine\DBAL\Types\TextType;
-use Doctrine\DBAL\Types\TimeType;
+use Illuminate\Database\Schema\Builder;
+use Illuminate\Database\Schema\Grammars\MySqlGrammar;
 
+/**
+ * @property string $logicalName
+ * @property string $note
+ * @property string blueprintType
+ * @property array blueprintOptions
+ */
 class Column
 {
-    /** @var ForeignKeyConstraint[] key: a foreign key name */
+    use Gets;
+
+    public readonly string $name;
+
+    public readonly string $typeName;
+
+    public readonly string $type;
+
+    public readonly ?string $collation;
+
+    public readonly bool $nullable;
+
+    public readonly ?string $default;
+
+    public readonly bool $autoIncrement;
+
+    public readonly string $comment;
+
+    public readonly bool $useCurrentOnUpdate;
+
+    /** @var ForeignKey[] key: a foreign key name */
     public readonly array $foreignKeyMap;
 
     /** @var Index[] key: an index name */
     public readonly array $indexMap;
 
-    public function __construct(public readonly Dbal $dbal, array $foreignKeys, array $indexes)
+    /**
+     * @param mixed[] $raw
+     * @param Index[] $allIndexMap
+     * @param ForeignKey[] $allForeignKeyMap
+     */
+    public function __construct(Builder $builder, string $table, array $raw, array $allIndexMap, array $allForeignKeyMap)
     {
-        $foreignKeyMap = [];
         $indexMap = [];
+        $foreignKeyMap = [];
+        $this->name = $selfName = $raw['name'];
+        $this->typeName = $raw['type_name'];
+        $this->type = $raw['type'];
+        $this->collation = $raw['collation'];
+        $this->nullable = $raw['nullable'];
+        $this->default = $raw['default'];
+        $this->autoIncrement = $raw['auto_increment'];
+        $this->comment = $raw['comment'] ?? '';
+        $this->useCurrentOnUpdate = $this->typeName === 'datetime' && $this->usesCurrentOnUpdate($builder, $table);
 
-        $selfName = $dbal->getName();
-
-        /** @var ForeignKeyConstraint $foreignKey */
-        foreach ($foreignKeys as $foreignKey) {
-            foreach ($foreignKey->getLocalColumns() as $name) {
+        foreach ($allIndexMap as $index) {
+            foreach ($index->columns as $name) {
                 if ($name === $selfName) {
-                    $foreignKeyMap[$foreignKey->getName()] = $foreignKey;
+                    $indexMap[$index->name] = $index;
 
                     break;
                 }
             }
         }
 
-        /** @var Index $index */
-        foreach ($indexes as $index) {
-            foreach ($index->getColumns() as $name) {
+        foreach ($allForeignKeyMap as $foreignKey) {
+            foreach ($foreignKey->localColumns as $name) {
                 if ($name === $selfName) {
-                    $indexMap[$index->getName()] = $index;
+                    $foreignKeyMap[$foreignKey->name] = $foreignKey;
 
                     break;
                 }
             }
         }
 
-        $this->foreignKeyMap = $foreignKeyMap;
         $this->indexMap = $indexMap;
-    }
-
-    /**
-     * Get a Blueprint method with arguments.
-     */
-    public function getBlueprintType(): string
-    {
-        $dbal = $this->dbal;
-        $type = $dbal->getType();
-        $class = get_class($type);
-
-        switch ($class) {
-            case BigIntType::class:
-                return $dbal->getUnsigned()
-                    ? ($dbal->getAutoincrement() ? 'bigIncrements' : 'unsignedBigInteger')
-                    : 'bigInteger';
-
-            case BinaryType::class:
-                // - MySQL treat a binary in the context of Blueprint as a `BLOB` (not `BINARY` or `VARBINARY`).
-                // - Blueprint does not support varbinary, smallBlob, blob, etc.
-                return ($dbal->getFixed() ? 'binary' : 'varbinary')
-                    .($dbal->getLength() !== 255 ? "({$dbal->getLength()})" : '');
-
-            case BlobType::class:
-                switch ($dbal->getLength()) {
-                    case 255:
-                        return 'tinyBlob';
-
-                    case 65535:
-                        // Blueprint does not support a like `blob`.
-                        return 'binary';
-
-                    case 16777215:
-                        return 'mediumBlob';
-
-                    case 4294967295:
-                        return 'longBlob';
-                }
-
-                throw new \RuntimeException("invalid blob length - {$dbal->getName()} TEXT({$dbal->getLength()})");
-
-            case BooleanType::class:
-                return $dbal->getUnsigned() ? 'unsignedTinyInteger' : 'boolean';
-
-            case DateTimeType::class:
-                return 'dateTime'.($dbal->getLength() !== 0 ? "({$dbal->getLength()})" : '');
-
-            case DateType::class:
-                return 'date';
-
-            case DecimalType::class:
-                return ($dbal->getUnsigned() ? 'unsignedDecimal' : 'decimal')
-                    .($dbal->getPrecision() !== 8 && $dbal->getScale() !== 2 ? "({$dbal->getPrecision()}, {$dbal->getScale()})" : '');
-
-            case FloatType::class:
-                // - DBAL does not have a like `DoubleType`.
-                // - In MySQL 8.0.17, `FLOAT(M, D)`, `DOUBLE(M, D)` is deprecated.
-                // - MySQL treat a float in the context of Blueprint as a double.
-                // -> Omit M and D for simplicity.
-                return $dbal->getUnsigned() ? 'unsignedDouble' : 'double';
-
-            case IntegerType::class:
-                return $dbal->getUnsigned()
-                    ? ($dbal->getAutoincrement() ? 'increments' : 'unsignedInteger')
-                    : 'integer';
-
-            case SimpleArrayType::class:
-                // not support `SET`, convert to a string
-                return 'string';
-
-            case SmallIntType::class:
-                return $dbal->getUnsigned()
-                    ? ($dbal->getAutoincrement() ? 'smallIncrements' : 'unsignedSmallInteger')
-                    : 'smallInteger';
-
-            case StringType::class:
-                // treat an enum as `StringType (Length: 0)`
-                $length = $dbal->getLength() ?: 255;
-
-                return $dbal->getFixed()
-                    ? "char({$length})"
-                    : ($length !== 255 ? "string({$length})" : 'string');
-
-            case TextType::class:
-                switch ($dbal->getLength()) {
-                    case 255:
-                        return 'tinyText';
-
-                    case 65535:
-                        return 'text';
-
-                    case 16777215:
-                        return 'mediumText';
-
-                    case 0:
-                    case 4294967295:
-                        return 'longText';
-                }
-
-                throw new \RuntimeException("invalid text length - {$dbal->getName()} TEXT({$dbal->getLength()})");
-
-            case TimeType::class:
-                return $dbal->getLength() !== 0 ? "time({$dbal->getLength()})" : 'time';
-
-            default:
-                throw new \RuntimeException("unsupported type {$class} - {$dbal->getName()}");
-        }
-    }
-
-    /**
-     * Get a Blueprint options.
-     */
-    public function getBlueprintOptions(): array
-    {
-        $options = [];
-
-        if ($this->dbal->getAutoincrement() && (!$this->dbal->getUnsigned() || $this->dbal->getType() instanceof DecimalType)) {
-            $options[] = 'autoIncrement';
-        }
-
-        if (!$this->dbal->getNotnull()) {
-            $options[] = 'nullable';
-        }
-
-        if (null !== ($default = $this->dbal->getDefault())) {
-            if (is_numeric($default)) {
-                $options[] = "default({$default})";
-            } elseif (preg_match('/^CURRENT_TIMESTAMP(?:\(\d\))?$/', $default) === 1) {
-                $options[] = 'useCurrent';
-            } else {
-                $options[] = 'default('.json_encode($default, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).')';
-            }
-        }
-
-        return $options;
-    }
-
-    /**
-     * Get the logical name of this column
-     * - treat the 1st row of this column comment as a logical name.
-     */
-    public function getLogicalName(): string
-    {
-        return $this->explodeComment(0);
-    }
-
-    /**
-     * Get the note of this column
-     * - treat the 2nd and after rows of this column comment as a note.
-     */
-    public function getNote(): string
-    {
-        return $this->explodeComment(1);
+        $this->foreignKeyMap = $foreignKeyMap;
     }
 
     public function iterateExplicitIndexes(): \Generator
@@ -223,8 +91,115 @@ class Column
         }
     }
 
+    /**
+     * Get a Blueprint method with arguments.
+     */
+    protected function getBlueprintType(): string
+    {
+        return match ($this->typeName) {
+            'bigint' => $this->getBlueprintIntegerType('big'),
+            'int' => $this->getBlueprintIntegerType(''),
+            'smallint' => $this->getBlueprintIntegerType('small'),
+            'tinyint' => $this->type === 'tinyint(1)' ? 'boolean' : $this->getBlueprintIntegerType('tiny'),
+            'decimal' => $this->type === 'decimal(8,2)' ? 'decimal' : $this->type,
+            'blob' => 'binary',
+            'varbinary' => preg_replace('/^var/', '', $this->type),
+            'binary' => preg_replace('/\)$/', ',true)', $this->type),
+            'datetime' => str_replace('datetime', 'dateTime', $this->type),
+            'varchar' => $this->type === 'varchar('.Builder::$defaultStringLength.')' ? 'string' : str_replace('varchar', 'string', $this->type),
+            'char' => $this->type === 'char('.Builder::$defaultStringLength.')' ? 'char' : $this->type,
+            'longtext' => 'longText',
+            'mediumtext' => 'mediumText',
+            'tinytext' => 'tinyText',
+            // double, date, time, text, enum
+            default => $this->type,
+        };
+    }
+
+    protected function getBlueprintIntegerType(string $size): string
+    {
+        $suffix = 'Integer';
+
+        if (str_ends_with($this->type, ' unsigned')) {
+            if ($this->autoIncrement) {
+                $suffix = 'Increments';
+            } else {
+                $size = 'unsigned'.ucfirst($size);
+            }
+        }
+
+        return lcfirst($size.$suffix);
+    }
+
+    /**
+     * Get a Blueprint options.
+     */
+    protected function getBlueprintOptions(): array
+    {
+        $options = [];
+
+        if ($this->autoIncrement) {
+            $options[] = 'autoIncrement';
+        }
+
+        if ($this->nullable) {
+            $options[] = 'nullable';
+        }
+
+        if (!is_null($default = $this->default)) {
+            if ($this->typeName === 'datetime' && str_starts_with($default, 'CURRENT_TIMESTAMP')) {
+                $options[] = 'useCurrent';
+            } elseif (is_numeric($default)) {
+                $options[] = 'default('.$default.')';
+            } else {
+                $options[] = 'default('.json_encode($default, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).')';
+            }
+        }
+
+        if ($this->useCurrentOnUpdate) {
+            $options[] = 'useCurrentOnUpdate';
+        }
+
+        return $options;
+    }
+
+    /**
+     * Get the logical name of this column
+     * - treat the 1st row of this column comment as a logical name.
+     */
+    protected function getLogicalName(): string
+    {
+        return $this->explodeComment(0);
+    }
+
+    /**
+     * Get the note of this column
+     * - treat the 2nd and after rows of this column comment as a note.
+     */
+    protected function getNote(): string
+    {
+        return $this->explodeComment(1);
+    }
+
     protected function explodeComment(int $index): string
     {
-        return explode("\n", $this->dbal->getComment() ?? '', 2)[$index] ?? '';
+        return explode("\n", $this->comment, 2)[$index] ?? '';
+    }
+
+    protected function usesCurrentOnUpdate(Builder $builder, string $table): bool
+    {
+        $connection = $builder->getConnection();
+
+        if (!$connection->getSchemaGrammar() instanceof MySqlGrammar) {
+            return false;
+        }
+
+        $extra = $connection->scalar(
+            'select `extra` from information_schema.columns where table_schema = ? and table_name = ? and column_name = ?',
+            [$connection->getDatabaseName(), $connection->getTablePrefix().$table, $this->name],
+            false
+        );
+
+        return strpos($extra, 'on update CURRENT_TIMESTAMP') !== false;
     }
 }

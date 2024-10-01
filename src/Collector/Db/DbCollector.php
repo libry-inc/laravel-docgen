@@ -59,11 +59,10 @@ class DbCollector implements CollectorInterface
         $ignorePatterns = array_values($this->createTableNameIgnorePatterns($tableNames));
         $builder = $this->getSchemaBuilder();
         $connection = $builder->getConnection();
-        $this->initializeConnection($connection);
         $tableMap = [];
 
-        foreach ($builder->getAllTables() as $row) {
-            $tableName = head((array) $row);
+        foreach ($builder->getTables() as $table) {
+            $tableName = $table['name'];
 
             foreach ($ignorePatterns as $ignorePattern) {
                 if (preg_match($ignorePattern, $tableName) === 1) {
@@ -76,7 +75,7 @@ class DbCollector implements CollectorInterface
                     continue;
                 }
 
-                $tableMap[$patternIndex][$tableName] = $this->createTable($connection, $tableName);
+                $tableMap[$patternIndex][$tableName] = $this->createTable($connection, $table);
 
                 break;
             }
@@ -99,7 +98,14 @@ class DbCollector implements CollectorInterface
 
     protected function getDefaultIgnoreTableNames(): array
     {
-        return [config('database.migrations')];
+        /**
+         * array if laravel>=11 https://github.com/laravel/laravel/blob/11.x/config/database.php
+         * string if laravel<11 https://github.com/laravel/laravel/blob/10.x/config/database.php
+         * @var array|string $config
+         */
+        $config = config('database.migrations');
+
+        return [$config['table'] ?? $config];
     }
 
     protected function getSchemaBuilder(): Builder
@@ -107,21 +113,14 @@ class DbCollector implements CollectorInterface
         return Schema::connection($this->connection);
     }
 
-    protected function initializeConnection(Connection $connection): void
-    {
-        $schemaManager = $connection->getDoctrineSchemaManager();
-        // treat enums as a string
-        $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
-    }
-
     protected function createTableCollection(Arrayable|iterable $tables): TableCollection
     {
         return new TableCollection($this->connection, $tables);
     }
 
-    protected function createTable(Connection $connection, string $tableName): Table
+    protected function createTable(Connection $connection, array $table): Table
     {
-        return new Table($connection, $connection->getDoctrineSchemaManager()->introspectTable($tableName));
+        return new Table($connection, $table);
     }
 
     protected function createTableNamePatterns(array $tableNames): array
