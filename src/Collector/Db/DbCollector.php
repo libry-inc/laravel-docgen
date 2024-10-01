@@ -105,7 +105,7 @@ class DbCollector implements CollectorInterface
          */
         $config = config('database.migrations');
 
-        return $config['table'] ?? $config;
+        return [$config['table'] ?? $config];
     }
 
     protected function getSchemaBuilder(): Builder
