@@ -1,9 +1,10 @@
 @php
 /**
  * @var \Libry\LaravelDocgen\Collector\Db\TableCollection<string,\Libry\LaravelDocgen\Collector\Db\Table> $tableCollection
+ * @var bool|null $listsRecords
  * @var string[]|null $tableNoteMap - $tableNoteMap[$tableName]: an additional note for the table
  */
-$ignoreColumns = ['created_at', 'updated_at'];
+$ignoreColumns = config('docgen.ignore_columns_in_listing_records');
 $flippedIgnoreColumns = array_flip($ignoreColumns);
 @endphp
 @foreach($tableCollection as $tableName => $table)
