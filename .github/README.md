@@ -9,18 +9,18 @@ You can edit the output with Blade PHP, like below:
 # Installation
 ```sh
 composer require --dev libry-inc/laravel-docgen
-artisan vendor:publish --tag=laravel-docgen
+artisan vendor:publish --tag=docgen
 ```
 
 # Usage
 ## Publish and generate a sample document
 ```sh
-artisan vendor:publish --tag=laravel-docgen.sample
+artisan vendor:publish --tag=docgen.sample
 artisan docgen db.sample
 ```
 
 ## Customize
-- To change I/O directions, modify config/laravel-docgen.php
+- To change I/O directions, modify config/docgen.php
 - To change outputs, modify resources/docgen/...
 
 # Contributions

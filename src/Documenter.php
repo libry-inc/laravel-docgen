@@ -53,7 +53,7 @@ class Documenter
                 $commands = [
                     'php',
                     escapeshellcmd(base_path('artisan')),
-                    'laravel-docgen',
+                    'docgen',
                     escapeshellarg($path),
                     '--ansi',
                 ];
@@ -96,6 +96,6 @@ class Documenter
 
     protected function getPathsToWatch(): array
     {
-        return config('laravel-docgen.template_paths');
+        return config('docgen.template_paths');
     }
 }

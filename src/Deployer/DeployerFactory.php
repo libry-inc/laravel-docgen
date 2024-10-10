@@ -8,6 +8,6 @@ class DeployerFactory extends Factory
 {
     public function create(?string $driver): DeployerInterface
     {
-        return $this->instantiate('deployers', $driver ?: config('laravel-docgen.default_deployer'));
+        return $this->instantiate('deployers', $driver ?: config('docgen.default_deployer'));
     }
 }
