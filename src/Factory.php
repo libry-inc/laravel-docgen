@@ -23,10 +23,10 @@ abstract class Factory
 
     private function getConfig(string $context, string $driver): array
     {
-        $config = config("laravel-docgen.{$context}.{$driver}");
+        $config = config("docgen.{$context}.{$driver}");
 
         if (!is_array($config)) {
-            throw new \RuntimeException("{$driver} is invalid or not found in config('laravel-docgen.{$context}')");
+            throw new \RuntimeException("{$driver} is invalid or not found in config('docgen.{$context}')");
         }
 
         return $config;
@@ -34,10 +34,10 @@ abstract class Factory
 
     private function getClass(string $context, string $driver): string
     {
-        $class = config("laravel-docgen.{$context}.{$driver}.class");
+        $class = config("docgen.{$context}.{$driver}.class");
 
         if (!is_string($class) || !class_exists($class) && !$this->app->has($class)) {
-            throw new \RuntimeException("config('laravel-docgen.{$context}.{$driver}.class') is not a class");
+            throw new \RuntimeException("config('docgen.{$context}.{$driver}.class') is not a class");
         }
 
         return $class;

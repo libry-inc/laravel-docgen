@@ -9,11 +9,11 @@ class Run extends Command implements IOInterface
 {
     protected $signature = <<<'EOS'
         docgen
-        {--c|collector= : a key of config('laravel-docgen.collectors')}
-        {--d|deployer= : a key of config('laravel-docgen.deployers')}
+        {--c|collector= : a key of config('docgen.collectors')}
+        {--d|deployer= : a key of config('docgen.deployers')}
         {--w|watch : document each time the file in path changes}
         {--r|refresh-collector : <fg=yellow>[DANGER]</> watch files related to the collector and re-collect, such as refreshing all migrations}
-        {path : a view path from config('laravel-docgen.collectors.*.template_paths')}
+        {path : a view path from config('docgen.collectors.*.template_paths')}
         EOS;
 
     protected $description = 'Auto-generate a document by collecting data from DB, etc.';

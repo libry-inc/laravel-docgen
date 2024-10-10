@@ -8,6 +8,6 @@ class CollectorFactory extends Factory
 {
     public function create(?string $driver): CollectorInterface
     {
-        return $this->instantiate('collectors', $driver ?: config('laravel-docgen.default_collector'));
+        return $this->instantiate('collectors', $driver ?: config('docgen.default_collector'));
     }
 }

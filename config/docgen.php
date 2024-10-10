@@ -34,4 +34,5 @@ return [
             'team_name' => env('LARAVEL_DOCGEN_ESA_TEAM_NAME'),
         ],
     ],
+    'ignore_columns_in_listing_records' => ['created_at', 'updated_at'],
 ];

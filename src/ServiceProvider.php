@@ -17,18 +17,18 @@ class ServiceProvider extends BaseServiceProvider
     {
         /**
          * @see \Illuminate\View\ViewServiceProvider
-         * registerViewFinder + laravel-docgen.template_paths
+         * registerViewFinder + docgen.template_paths
          */
-        $this->app->bind('laravel-docgen.finder', static function (Application $app): FileViewFinder {
-            return new FileViewFinder($app['files'], $app['config']['laravel-docgen.template_paths']);
+        $this->app->bind('docgen.finder', static function (Application $app): FileViewFinder {
+            return new FileViewFinder($app['files'], $app['config']['docgen.template_paths']);
         });
 
         /**
          * @see \Illuminate\View\ViewServiceProvider
-         * registerFactory + laravel-docgen.finder
+         * registerFactory + docgen.finder
          */
-        $this->app->singleton('laravel-docgen.view', static function (Application $app): Factory {
-            $factory = new Factory($app['view.engine.resolver'], $app['laravel-docgen.finder'], $app['events']);
+        $this->app->singleton('docgen.view', static function (Application $app): Factory {
+            $factory = new Factory($app['view.engine.resolver'], $app['docgen.finder'], $app['events']);
             $factory->setContainer($app);
             $factory->share('app', $app);
             $app->terminating(static fn () => Component::forgetFactory());
@@ -37,19 +37,23 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->app->bind(Documenter::class, static function (Application $app): Documenter {
-            return new Documenter($app[CollectorFactory::class], $app[DeployerFactory::class], $app['laravel-docgen.view']);
+            return new Documenter($app[CollectorFactory::class], $app[DeployerFactory::class], $app['docgen.view']);
         });
     }
 
     public function boot(): void
     {
         $this->publishes(
-            [__DIR__.'/../config/laravel-docgen.php' => config_path('laravel-docgen.php')],
-            ['laravel-docgen']
+            [__DIR__.'/../config/docgen.php' => config_path('docgen.php')],
+            ['docgen']
         );
         $this->publishes(
-            [__DIR__.'/../resources/docgen' => resource_path('docgen')],
-            ['laravel-docgen.sample']
+            [
+                __DIR__.'/../resources/docgen/db/shared' => resource_path('docgen/db/shared'),
+                __DIR__.'/../resources/docgen/db/sample.blade.php' => resource_path('docgen/db/sample.blade.php'),
+                __DIR__.'/../resources/lang/en/docgen.php' => resource_path('lang/en/docgen.php'),
+            ],
+            ['docgen.sample']
         );
 
         if ($this->app->runningInConsole()) {

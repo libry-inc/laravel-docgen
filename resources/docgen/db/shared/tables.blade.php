@@ -1,17 +1,18 @@
 @php
 /**
  * @var \Libry\LaravelDocgen\Collector\Db\TableCollection<string,\Libry\LaravelDocgen\Collector\Db\Table> $tableCollection
+ * @var bool|null $listsRecords
  * @var string[]|null $tableNoteMap - $tableNoteMap[$tableName]: an additional note for the table
  */
-$ignoreColumns = ['created_at', 'updated_at'];
+$ignoreColumns = config('docgen.ignore_columns_in_listing_records');
 $flippedIgnoreColumns = array_flip($ignoreColumns);
 @endphp
 @foreach($tableCollection as $tableName => $table)
-{{----}}### {!! $tableName !!}
+{{----}}#### {!! $tableName !!}
 {{----}}##### {!! $table->logicalName !!}
 {{----}}{!! $table->description !!}
 {{----}}
-{{----}}| Label | Name | Type | Detail | Key | Note |
+{{----}}{{ __('docgen.db.shared.tables.header') }}
 {{----}}| -- | -- | -- | -- | -- | -- |
 {{----}}@foreach($table->columnMap as $columnName => $column)
 {{----}}{{----}}| {!!
@@ -21,7 +22,7 @@ $flippedIgnoreColumns = array_flip($ignoreColumns);
 /*------------*/    $column->blueprintType,
 /*------------*/    implode('<br>', $column->blueprintOptions),
 /*------------*/    implode('<br>', array_keys($column->foreignKeyMap + iterator_to_array($column->iterateExplicitIndexes()))),
-/*------------*/    $column->note,
+/*------------*/    str_replace("\n", '<br>', $column->note),
 /*------------*/])
 /*------------*/!!} |
 {{----}}@endforeach

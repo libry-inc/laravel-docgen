@@ -9,7 +9,7 @@ return [
         // dummy
         's3' => [
             'driver' => 'local',
-            'root' => storage_path('app/laravel-docgen'),
+            'root' => storage_path('app/docgen'),
         ],
     ],
 ];
