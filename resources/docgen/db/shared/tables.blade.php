@@ -8,7 +8,7 @@ $ignoreColumns = config('docgen.ignore_columns_in_listing_records');
 $flippedIgnoreColumns = array_flip($ignoreColumns);
 @endphp
 @foreach($tableCollection as $tableName => $table)
-{{----}}### {!! $tableName !!}
+{{----}}#### {!! $tableName !!}
 {{----}}##### {!! $table->logicalName !!}
 {{----}}{!! $table->description !!}
 {{----}}
@@ -22,7 +22,7 @@ $flippedIgnoreColumns = array_flip($ignoreColumns);
 /*------------*/    $column->blueprintType,
 /*------------*/    implode('<br>', $column->blueprintOptions),
 /*------------*/    implode('<br>', array_keys($column->foreignKeyMap + iterator_to_array($column->iterateExplicitIndexes()))),
-/*------------*/    $column->note,
+/*------------*/    str_replace("\n", '<br>', $column->note),
 /*------------*/])
 /*------------*/!!} |
 {{----}}@endforeach

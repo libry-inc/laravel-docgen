@@ -11,7 +11,7 @@ $output->setFilename('sample.md');
     'tableCollection' => $collector->getTableCollection(),
 ])
 
-## Customized
+### Customized
 @include('db.shared.erd_in_md', [
     'tableCollection' => $collector->getTableCollection(['groups', 'members', 'tests', 'roles']),
     'config' => 'hide circle',
