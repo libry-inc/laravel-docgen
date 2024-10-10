@@ -48,7 +48,11 @@ class ServiceProvider extends BaseServiceProvider
             ['docgen']
         );
         $this->publishes(
-            [__DIR__.'/../resources/docgen' => resource_path('docgen')],
+            [
+                __DIR__.'/../resources/docgen/db/shared' => resource_path('docgen/db/shared'),
+                __DIR__.'/../resources/docgen/db/sample.blade.php' => resource_path('docgen/db/sample.blade.php'),
+                __DIR__.'/../resources/lang/en/docgen.php' => resource_path('lang/en/docgen.php'),
+            ],
             ['docgen.sample']
         );
 

@@ -12,7 +12,7 @@ $flippedIgnoreColumns = array_flip($ignoreColumns);
 {{----}}##### {!! $table->logicalName !!}
 {{----}}{!! $table->description !!}
 {{----}}
-{{----}}| Label | Name | Type | Detail | Key | Note |
+{{----}}{{ __('docgen.db.shared.tables.header') }}
 {{----}}| -- | -- | -- | -- | -- | -- |
 {{----}}@foreach($table->columnMap as $columnName => $column)
 {{----}}{{----}}| {!!
