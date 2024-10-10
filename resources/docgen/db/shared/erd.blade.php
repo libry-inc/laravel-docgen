@@ -6,6 +6,7 @@
  * @var (\Libry\LaravelDocgen\Collector\Db\Relation|array|string)[]|null $relationMap - $relationMap[$tableName][$foreignKeyName]: an additional or overriding relation
  * @var ?string $footer
  */
+$tempTableMap = $tableCollection->all();
 @endphp
 @startuml
 @isset($config)
@@ -31,10 +32,16 @@
 
 @foreach($tableCollection as $tableName => $table)
 {{----}}@foreach($table->iterateRelations($relationMap[$tableName] ?? []) as $relation)
-{{----}}{{----}}@if($relation->line !== '' && isset($tableCollection[$relation->foreignTable]))
+{{----}}{{----}}@if($relation->line !== '')
+{{----}}{{----}}{{----}}@empty($tempTableMap[$relation->foreignTable])
+{{----}}{{----}}{{----}}{{----}}@php
+/*----------------------------*/$tempTableMap[$relation->foreignTable] = true;
+/*----------------------------*/@endphp
+{{----}}{{----}}{{----}}{{----}}entity "{!! $relation->foreignTable !!}" as _{!! $relation->foreignTable !!} #aaa {}
+{{----}}{{----}}{{----}}@endempty
 {{----}}{{----}}{{----}}{!!
 /*--------------------*/"_$tableName {$relation->line} _{$relation->foreignTable}"
-/*--------------------*/!!}@if($relation->comment !== '') : {!! $relation->comment ?? $relation->name !!}@endif
+/*--------------------*/!!}@if($relation->comment !== '') : {!! $relation->comment ?? implode("\n", $relation->localColumns) !!}@endif
 {{----}}{{----}}{{----}}
 {{----}}{{----}}@endif
 {{----}}@endforeach

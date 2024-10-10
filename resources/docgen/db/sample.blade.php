@@ -22,7 +22,7 @@ $output->setFilename('sample.md');
         ],
         'members' => [
             'members_group_id_foreign' => '}o-||',
-            'role_id' => new \Libry\LaravelDocgen\Collector\Db\Relation('role_id', 'roles', line: '}o--||'),
+            'role_id' => \Libry\LaravelDocgen\Collector\Db\Relation::create('roles', '}o--||'),
         ],
     ],
     'footer' => <<<'EOS'
