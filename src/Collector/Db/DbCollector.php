@@ -61,7 +61,8 @@ class DbCollector implements CollectorInterface
         $connection = $builder->getConnection();
         $tableMap = [];
 
-        foreach ($builder->getTables() as $table) {
+        // Scope to the current schema because laravel>=13 returns the tables in all schemas by default
+        foreach ($builder->getTables($builder->getCurrentSchemaName()) as $table) {
             $tableName = $table['name'];
 
             foreach ($ignorePatterns as $ignorePattern) {
